@@ -72,6 +72,54 @@ class JwtTokenServiceTest {
     assertThat(exception).isNotNull();
   }
 
+  @Test
+  void shouldAcceptUrlSafeBase64Secret() {
+    // Arrange
+    final String urlSafeSecret = urlSafeSecretWithDashAndUnderscore();
+    final JwtTokenService service = serviceWithSecret(urlSafeSecret);
+
+    // Act
+    final JwtPrincipal principal = service.parse(service.generate(activeUser()));
+
+    // Assert
+    assertThat(urlSafeSecret).contains("-").contains("_");
+    assertThat(principal.userId()).isEqualTo("user-001");
+  }
+
+  @Test
+  void shouldTreatStandardAndUrlSafeEncodingsOfTheSameKeyAsEquivalent() {
+    // Arrange
+    final byte[] keyBytes = secretBytesWithUrlSafeCharacters();
+    final JwtTokenService standardService =
+        serviceWithSecret(Base64.getEncoder().encodeToString(keyBytes));
+    final JwtTokenService urlSafeService = serviceWithSecret(urlSafeSecretWithDashAndUnderscore());
+
+    // Act
+    final JwtPrincipal principal = urlSafeService.parse(standardService.generate(activeUser()));
+
+    // Assert
+    assertThat(principal.userId()).isEqualTo("user-001");
+  }
+
+  private static JwtTokenService serviceWithSecret(final String secret) {
+    return new JwtTokenService(
+        new JwtProperties(secret, EXPIRATION_SECONDS), Clock.fixed(NOW, ZoneOffset.UTC));
+  }
+
+  private static String urlSafeSecretWithDashAndUnderscore() {
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(secretBytesWithUrlSafeCharacters());
+  }
+
+  // 0xFB 0xEF 0xBE encodes to "----" (URL-safe) and 0xFF to "_"; 33 bytes >= 256 bits for HS256.
+  private static byte[] secretBytesWithUrlSafeCharacters() {
+    final byte[] pattern = {(byte) 0xFB, (byte) 0xEF, (byte) 0xBE};
+    final byte[] bytes = new byte[33];
+    for (int i = 0; i < bytes.length; i++) {
+      bytes[i] = i < 15 ? pattern[i % pattern.length] : (byte) 0xFF;
+    }
+    return bytes;
+  }
+
   private static JwtTokenService serviceAt(final Instant instant) {
     return new JwtTokenService(
         new JwtProperties(SECRET, EXPIRATION_SECONDS), Clock.fixed(instant, ZoneOffset.UTC));
