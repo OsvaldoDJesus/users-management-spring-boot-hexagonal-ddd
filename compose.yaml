@@ -4,10 +4,10 @@ services:
     environment:
       MYSQL_DATABASE: crud_usuarios
       MYSQL_USER: users_app
-      MYSQL_PASSWORD: local_users_password
-      MYSQL_ROOT_PASSWORD: local_root_password
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD en el archivo .env local}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Defina MYSQL_ROOT_PASSWORD en el archivo .env local}
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
@@ -32,22 +32,21 @@ services:
       DB_PORT: "3306"
       DB_NAME: crud_usuarios
       DB_USERNAME: users_app
-      DB_PASSWORD: local_users_password
+      DB_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD en el archivo .env local}
       DB_SSL_MODE: DISABLED
-      SMTP_HOST: smtp.gmail.com
-      SMTP_PORT: "587"
-      SMTP_USERNAME: ${SMTP_USERNAME:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      SMTP_FROM_ADDRESS: ${SMTP_FROM_ADDRESS:-}
-      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Gestion de Usuarios}
-      JWT_SECRET: ${JWT_SECRET:-ZGV2ZWxvcG1lbnQtb25seS1qd3Qtc2VjcmV0LW11c3QtYmUtcmVwbGFjZWQ=}
+      BREVO_API_KEY: ${BREVO_API_KEY:?Defina BREVO_API_KEY en el archivo .env local}
+      BREVO_FROM_ADDRESS: ${BREVO_FROM_ADDRESS:?Defina BREVO_FROM_ADDRESS en el archivo .env local}
+      BREVO_FROM_NAME: ${BREVO_FROM_NAME:-Gestion de Usuarios}
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET en el archivo .env local}
       JWT_EXPIRATION_SECONDS: ${JWT_EXPIRATION_SECONDS:-900}
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     depends_on:
       mysql:
         condition: service_healthy
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
 
 volumes:
   mysql-data:

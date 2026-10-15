@@ -12,7 +12,7 @@
 
   <groupId>com.jcaa.usersmanagement</groupId>
   <artifactId>users-management</artifactId>
-  <version>2.1.5</version>
+  <version>2.2.0</version>
 
   <properties>
     <!-- El parent de Spring Boot usa java.version para configurar el compilador -->
@@ -21,7 +21,7 @@
     <!-- Versiones de dependencias no gestionadas por el BOM de Spring Boot -->
     <lombok.version>1.18.36</lombok.version>
     <mysql.connector.version>9.3.0</mysql.connector.version>
-    <javamail.version>1.6.2</javamail.version>
+    <resilience4j.version>2.2.0</resilience4j.version>
     <bcrypt.version>0.10.2</bcrypt.version>
     <jjwt.version>0.13.0</jjwt.version>
     <!-- Declarativas: Mockito y Jacoco siguen siendo explícitas para tener control -->
@@ -78,11 +78,16 @@
       <version>${mysql.connector.version}</version>
     </dependency>
 
-    <!-- JavaMail API (javax.mail legacy — NO migrado a jakarta.mail, intencional) -->
+    <!-- Resiliencia para el cliente HTTP de Brevo -->
     <dependency>
-      <groupId>com.sun.mail</groupId>
-      <artifactId>javax.mail</artifactId>
-      <version>${javamail.version}</version>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-retry</artifactId>
+      <version>${resilience4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-circuitbreaker</artifactId>
+      <version>${resilience4j.version}</version>
     </dependency>
 
     <!-- BCrypt para hashing de contraseñas -->
