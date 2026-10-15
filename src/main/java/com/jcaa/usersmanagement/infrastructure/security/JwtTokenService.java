@@ -28,9 +28,18 @@ public class JwtTokenService {
   }
 
   JwtTokenService(final JwtProperties properties, final Clock clock) {
-    this.signingKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(properties.secret()));
+    this.signingKey = Keys.hmacShaKeyFor(decodeSecret(properties.secret()));
     this.expirationSeconds = properties.expirationSeconds();
     this.clock = clock;
+  }
+
+  /**
+   * Accepts the secret in standard Base64 or in its URL-safe variant ({@code -} and {@code _}),
+   * which is what some platforms (e.g. Render's {@code generateValue}) emit.
+   */
+  private static byte[] decodeSecret(final String secret) {
+    final String standardBase64 = secret.trim().replace('-', '+').replace('_', '/');
+    return Base64.getDecoder().decode(standardBase64);
   }
 
   public String generate(final UserModel user) {
